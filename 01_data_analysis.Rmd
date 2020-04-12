@@ -39,7 +39,7 @@ df <- read_csv("data/cleaned_dataset.csv") %>%
 
 df %>%
   head() %>%
-  datatable()
+  datatable(options = list(dom = 't'))
 ```
 
 # Subject-Level Data (Retained Subjects Only) 
@@ -57,7 +57,7 @@ df %>%
             female = sum(if_else(sex == 'female', 1, 0)),
             right_handed = sum(if_else(handedness == 'right', 1, 0)),
             left_handed = sum(if_else(handedness == 'left', 1, 0))) %>%
-  datatable()
+  datatable(options = list(dom = 't'))
 ```
 
 And their reaction time:
@@ -76,7 +76,7 @@ subject_level %>%
   spread(word_type, rt) %>%
   ungroup() %>%
   mutate_if(is.numeric, round, 1) %>%
-  datatable()
+  datatable(options = list(dom = 't'))
 ```
 
 And their accuracy: 
@@ -89,7 +89,7 @@ subject_level %>%
   spread(word_type, accuracy) %>%
   ungroup() %>%
   mutate_if(is.numeric, percent, .1) %>%
-  datatable()
+  datatable(options = list(dom = 't'))
 ```
 
 # Visualization
