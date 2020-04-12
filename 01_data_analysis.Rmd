@@ -1,0 +1,18 @@
+---
+title: "Rowley - VWR - Phonological Priming"
+output: html_notebook
+---
+
+```{r load packages, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lme4)
+```
+
+
+# Load data 
+We'll load the data from the CSV we created in `00_clean_data.R` and remove all rows with RTs < 250 or > 1200 using the `exclude_too_fast_slow` flag.
+
+```{r load data, message=FALSE, warning=FALSE}
+df <- read_csv("data/cleaned_dataset.csv") %>%
+  filter(exclude_too_fast_slow == 0)
+```
