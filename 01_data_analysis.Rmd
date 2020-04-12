@@ -1,18 +1,149 @@
 ---
 title: "Rowley - VWR - Phonological Priming"
-output: html_notebook
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
 ---
 
 ```{r load packages, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(DT)
 library(lme4)
+library(scales)
+library(broom)
+library(sjPlot)
+library(sjmisc)
 ```
 
 
 # Load data 
-We'll load the data from the CSV we created in `00_clean_data.R` and remove all rows with RTs < 250 or > 1200 using the `exclude_too_fast_slow` flag.
+We'll load the data from the CSV we created in `00_clean_data.R` and remove:
+
+1. All rows with RTs < 250 or > 1200 using the `exclude_too_fast_slow` flag
+2. All non-word trials 
+3. Words: BADE, DUES, FOB, NORSE, VAT, WAIF
+4. Subjects 9, 10, 32, 61
+
+Below is a sample of that dataset: 
 
 ```{r load data, message=FALSE, warning=FALSE}
 df <- read_csv("data/cleaned_dataset.csv") %>%
-  filter(exclude_too_fast_slow == 0)
+  filter(exclude_too_fast_slow == 0) %>%
+  filter(word_type != 'Nonword') %>%
+  filter(!(target_trial %in% c('BADE', 'DUES', 'FOB', 'NORSE', 'VAT', 'WAIF'))) %>%
+  filter(!(subject %in% c(9, 10, 32, 61))) %>%
+  mutate_at(vars(group, subject), factor) %>%
+  rename(rt = reaction_time)
+
+df %>%
+  head() %>%
+  datatable()
 ```
+
+# Subject-Level Data (Retained Subjects Only) 
+
+Let's take a look at our participants:
+
+```{r}
+df %>%
+  select(subject, age, group, handedness, sex) %>%
+  distinct() %>%
+  group_by(group) %>%
+  summarise(participants = n(),
+            age = round(mean(age), 1),
+            male = sum(if_else(sex == 'male', 1, 0)),
+            female = sum(if_else(sex == 'female', 1, 0)),
+            right_handed = sum(if_else(handedness == 'right', 1, 0)),
+            left_handed = sum(if_else(handedness == 'left', 1, 0))) %>%
+  datatable()
+```
+
+And their reaction time:
+
+```{r}
+# First calculate subject-level dataset 
+subject_level <- df %>%
+  group_by(group, subject, prime_type, word_type) %>%  # Subject-level
+  summarise(accuracy = mean(accuracy),
+            rt = mean(rt))
+
+# Reaction time on group level
+subject_level %>%
+  group_by(group, prime_type, word_type) %>%  # Group-level
+  summarise(rt = mean(rt)) %>%
+  spread(word_type, rt) %>%
+  ungroup() %>%
+  mutate_if(is.numeric, round, 1) %>%
+  datatable()
+```
+
+And their accuracy: 
+
+```{r}
+# Accuracy on group level
+subject_level %>%
+  group_by(group, prime_type, word_type) %>%  # Group-level
+  summarise(accuracy = mean(accuracy)) %>%
+  spread(word_type, accuracy) %>%
+  ungroup() %>%
+  mutate_if(is.numeric, percent, .1) %>%
+  datatable()
+```
+
+# Visualization
+```{r}
+subject_level %>%
+  ggplot(aes(x = group, y = rt, fill = prime_type)) +
+  geom_boxplot() +
+  scale_y_continuous()
+
+subject_level %>%
+  ggplot(aes(x = group, y = accuracy, fill = prime_type)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = percent_format(1))
+```
+
+# Modeling 
+
+To set up our linear mixed effects (also called hierarchical regression, multilevel models, etc.) we need to decide what are the fixed effects (the ones we are interested in) and what are the random effects (what we are not interested in, but which variance should be accounted for in our model).
+
+Models for:
+
+1. Reaction time
+2. Accuracy
+
+In each model, the fixed effects are:
+
+1. Group (deaf/hearing)
+2. Prime Type (phonological/graphemic)
+
+And the random effects are:
+
+1. List (A/B)
+2. Subject
+3. Item
+
+## Reaction Time
+
+```{r}
+rt_model <- lmer(data = df, rt ~ group + prime_type + 
+                                 (1|running_trial) + (1|subject) +
+                                 (1|target_trial))
+
+tab_model(rt_model)
+plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
+```
+
+## Accuracy
+
+```{r}
+acc_model <- lmer(data = df, accuracy ~ group + prime_type + 
+                                 (1|running_trial) + (1|subject) +
+                                 (1|target_trial))
+
+tab_model(acc_model)
+plot_model(acc_model, vline.color = 'black',  show.values = TRUE)
+```
+
