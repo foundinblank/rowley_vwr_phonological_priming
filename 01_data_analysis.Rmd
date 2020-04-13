@@ -44,9 +44,9 @@ df %>%
   datatable(options = list(dom = 't'))
 ```
 
-## Subject-Level Data (Retained Subjects Only) 
+## Subject-Level Data 
 
-Let's take a look at our participants:
+Let's take a look at our participants that we didn't remove:
 
 ```{r}
 df %>%
@@ -105,6 +105,12 @@ subject_level %>%
   ggplot(aes(x = group, y = accuracy, fill = prime_type)) +
   geom_boxplot() +
   scale_y_continuous(labels = percent_format(1))
+
+
+df %>%
+  ggplot(aes(x = subject, y = rt, fill = group)) +
+  geom_boxplot() +
+  guides()
 ```
 
 ## Modeling 
@@ -179,9 +185,9 @@ df %>%
 ```
 
 
-## Subject-Level Data (Retained Subjects Only) 
+## Subject-Level Data
 
-Let's take a look at our participants:
+Let's take a look at our participants that we didn't exclude:
 
 ```{r}
 hearing_df %>%
@@ -239,6 +245,12 @@ subject_level %>%
   ggplot(aes(x = prime_type, y = accuracy, fill = prime_type)) +
   geom_boxplot() +
   scale_y_continuous(labels = percent_format(1))
+
+hearing_df %>%
+  ggplot(aes(x = subject, y = rt, fill = group)) +
+  geom_boxplot() +
+  guides(fill = F) +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 ## Modeling 
