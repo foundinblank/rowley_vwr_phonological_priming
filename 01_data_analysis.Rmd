@@ -136,7 +136,7 @@ And the random effects are:
 ### Reaction Time Model
 
 ```{r}
-rt_model <- lmer(data = df, rt ~ group + prime_type + 
+rt_model <- lmer(data = df, rt ~ group * prime_type + 
                                  (1|running_trial) + (1|subject) +
                                  (1|target_trial))
 
@@ -147,7 +147,7 @@ plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
 ### Accuracy Model
 
 ```{r}
-acc_model <- lmer(data = df, accuracy ~ group + prime_type + 
+acc_model <- lmer(data = df, accuracy ~ group * prime_type + 
                                  (1|running_trial) + (1|subject) +
                                  (1|target_trial))
 
@@ -164,6 +164,8 @@ We'll load the data from the CSV we created in `00_clean_data_hearing.R` and rem
 2. All non-word trials 
 3. Subjects 2, 39, 126 for acc > |2.5| SD
 4. Subject 1 (seems to be 2 participants under one ID)
+5. Words: BADE, DUES, FOB, NORSE, VAT, WAIF (Same as the first analysis)
+
 
 **No words were excluded...that right?**
 
@@ -173,7 +175,7 @@ Below is a sample of that dataset:
 hearing_df <- read_csv("data/cleaned_dataset_hearing.csv") %>%
   filter(exclude_too_fast_or_slow == 0) %>%
   filter(word_type != 'Nonword') %>%
-  # filter(!(target_trial %in% c('BADE', 'DUES', 'FOB', 'NORSE', 'VAT', 'WAIF'))) %>%
+  filter(!(target_trial %in% c('BADE', 'DUES', 'FOB', 'NORSE', 'VAT', 'WAIF'))) %>%
   filter(!(subject %in% c(1, 2, 39, 126))) %>%
   mutate_at(vars(group, subject), factor) %>%
   rename(rt = target_displayed_rt_trial,
