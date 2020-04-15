@@ -109,8 +109,14 @@ subject_level %>%
 
 df %>%
   ggplot(aes(x = subject, y = rt, fill = group)) +
-  geom_boxplot() +
-  guides()
+  geom_boxplot()
+
+df %>% 
+  group_by(group, subject) %>%
+  summarise(accuracy = mean(accuracy)) %>%
+  ggplot(aes(x = subject, y = accuracy, color = group)) +
+  geom_point() +
+  scale_y_continuous(labels = percent_format(1))
 ```
 
 ## Modeling 
@@ -253,6 +259,16 @@ hearing_df %>%
   geom_boxplot() +
   guides(fill = F) +
   theme(axis.text.x = element_text(angle = 90))
+
+hearing_df %>% 
+  group_by(group, subject) %>%
+  summarise(accuracy = mean(accuracy)) %>%
+  ggplot(aes(x = subject, y = accuracy, color = group)) +
+  geom_point() +
+  guides(color = F) +
+  scale_y_continuous(labels = percent_format(1)) +
+  theme(axis.text.x = element_text(angle = 90))
+
 ```
 
 ## Modeling 
