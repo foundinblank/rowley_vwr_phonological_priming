@@ -19,5 +19,29 @@ df <- read_xls("data/AllMatchedMLDTdata.xls", sheet = "Main Data") %>%
          -studio_version,
          -target_displayed_duration_error_trial)
 
+# Load reading data
+vw_rs <- read_xlsx("data/Participant Data Study 2.xlsx", sheet = "Matched") %>%
+  clean_names() %>%
+  filter(str_starts(code_1, '\\d'))
+
+deaf_rs <- vw_rs %>%
+  select(code_1, vw_rs_6) %>%
+  rename(subject = code_1,
+         vw_rs = vw_rs_6) %>%
+  mutate_all(as.numeric)
+
+hearing_rs <- vw_rs %>%
+  select(code_10, vw_rs_15) %>%
+  rename(subject = code_10,
+         vw_rs = vw_rs_15) %>%
+  mutate_all(as.numeric)
+
+vw_rs <- bind_rows(deaf_rs, hearing_rs)
+
+
+# Combine main data and reading score data
+df <- df %>%
+  left_join(vw_rs, by = 'subject')
+
 # Save to new CSV file
 write_csv(df, "data/cleaned_dataset.csv")

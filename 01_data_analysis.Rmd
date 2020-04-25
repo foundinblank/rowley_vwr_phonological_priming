@@ -50,11 +50,12 @@ Let's take a look at our participants that we didn't remove:
 
 ```{r}
 df %>%
-  select(subject, age, group, handedness, sex) %>%
+  select(subject, age, group, handedness, sex, vw_rs) %>%
   distinct() %>%
   group_by(group) %>%
   summarise(participants = n(),
             age = round(mean(age), 1),
+            vw_rs = round(mean(vw_rs), 1),
             male = sum(if_else(sex == 'male', 1, 0)),
             female = sum(if_else(sex == 'female', 1, 0)),
             right_handed = sum(if_else(handedness == 'right', 1, 0)),
@@ -69,7 +70,8 @@ And their reaction time:
 subject_level <- df %>%
   group_by(group, subject, prime_type, word_type) %>%  # Subject-level
   summarise(accuracy = mean(accuracy),
-            rt = mean(rt))
+            rt = mean(rt),
+            vw_rs = mean(vw_rs))
 
 # Reaction time on group level
 subject_level %>%
@@ -117,6 +119,38 @@ df %>%
   ggplot(aes(x = subject, y = accuracy, color = group)) +
   geom_point() +
   scale_y_continuous(labels = percent_format(1))
+
+df %>% 
+  group_by(group, subject) %>%
+  summarise(vw_rs = mean(vw_rs)) %>%
+  ggplot(aes(x = subject, y = vw_rs, color = group)) +
+  geom_point()
+```
+
+### With Reading Scores
+
+```{r}
+subject_level %>%
+  ggplot(aes(x = vw_rs, y = rt, color = group)) +
+  geom_point() +
+  geom_smooth(method = 'lm') 
+
+subject_level %>%
+  ggplot(aes(x = vw_rs, y = rt, color = group)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  facet_wrap("prime_type")
+
+subject_level %>%
+  ggplot(aes(x = vw_rs, y = accuracy, color = group)) +
+  geom_point() +
+  geom_smooth(method = 'lm')  
+
+subject_level %>%
+  ggplot(aes(x = vw_rs, y = accuracy, color = group)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  facet_wrap("prime_type")
 ```
 
 ## Modeling 
@@ -158,6 +192,39 @@ acc_model <- lmer(data = df, accuracy ~ group * prime_type + running_trial +
 tab_model(acc_model)
 plot_model(acc_model, vline.color = 'black',  show.values = TRUE)
 ```
+
+### Reaction Time Model with vw_rs
+
+```{r}
+rt_model <- lmer(data = df, rt ~ group * prime_type + running_trial + vw_rs +
+                                 (1|subject) + (1|target_trial))
+
+tab_model(rt_model)
+plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
+
+# coefs <- coef(rt_model)$subject %>%
+#   rownames_to_column("subject") %>%
+#   janitor::clean_names() %>%
+#   select(subject, intercept)
+# 
+# vw_rs_only <- df %>%
+#   select(subject, vw_rs) %>%
+#   distinct()
+# 
+# cor.test(coefs$intercept, vw_rs_only$vw_rs)
+```
+
+
+### Accuracy Model with vw_rs
+
+```{r}
+acc_model <- lmer(data = df, accuracy ~ group * prime_type + running_trial +
+                                 vw_rs + (1|subject) + (1|target_trial))
+
+tab_model(acc_model)
+plot_model(acc_model, vline.color = 'black',  show.values = TRUE)
+```
+
 
 # 50 Hearing 
 
