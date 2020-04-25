@@ -142,9 +142,8 @@ And the random effects are:
 ### Reaction Time Model
 
 ```{r}
-rt_model <- lmer(data = df, rt ~ group * prime_type + 
-                                 (1|running_trial) + (1|subject) +
-                                 (1|target_trial))
+rt_model <- lmer(data = df, rt ~ group * prime_type + running_trial +
+                                 (1|subject) + (1|target_trial))
 
 tab_model(rt_model)
 plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
@@ -153,9 +152,8 @@ plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
 ### Accuracy Model
 
 ```{r}
-acc_model <- lmer(data = df, accuracy ~ group * prime_type + 
-                                 (1|running_trial) + (1|subject) +
-                                 (1|target_trial))
+acc_model <- lmer(data = df, accuracy ~ group * prime_type + running_trial +
+                                 (1|subject) + (1|target_trial))
 
 tab_model(acc_model)
 plot_model(acc_model, vline.color = 'black',  show.values = TRUE)
@@ -293,9 +291,8 @@ And the random effects are:
 ### Reaction Time Model
 
 ```{r}
-rt_model <- lmer(data = hearing_df, rt ~ prime_type + 
-                                 (1|running_trial) + (1|subject) +
-                                 (1|target_trial))
+rt_model <- lmer(data = hearing_df, rt ~ prime_type + running_trial + 
+                                         (1|subject) + (1|target_trial))
 
 tab_model(rt_model)
 plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
@@ -304,9 +301,8 @@ plot_model(rt_model, vline.color = 'black',  show.values = TRUE)
 ### Accuracy Model
 
 ```{r}
-acc_model <- lmer(data = hearing_df, accuracy ~ prime_type + 
-                                 (1|running_trial) + (1|subject) +
-                                 (1|target_trial))
+acc_model <- lmer(data = hearing_df, accuracy ~ prime_type + running_trial + 
+                                         (1|subject) + (1|target_trial))
 
 tab_model(acc_model)
 plot_model(acc_model, vline.color = 'black',  show.values = TRUE)
